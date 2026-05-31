@@ -47,6 +47,12 @@ def compute_perplexity(model: nn.Module, dataloader: DataLoader, device: str) ->
 def train(config: Config) -> None:
     device = config.device
 
+    # Cap CPU threads so training leaves headroom for the system (keeps the
+    # laptop responsive). 0 means use PyTorch's default (all cores).
+    if config.num_threads and config.num_threads > 0:
+        torch.set_num_threads(config.num_threads)
+        print(f"Capped PyTorch to {config.num_threads} CPU threads")
+
     # --- Tokenizer ---
     tokenizer = GPT2Tokenizer.from_pretrained(config.training.model_name)
     tokenizer.pad_token = tokenizer.eos_token

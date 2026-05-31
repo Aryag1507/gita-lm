@@ -1,7 +1,7 @@
 """Entry point: fine-tune GPT-2 with LoRA on Prabhupada commentaries."""
 
 import typer
-from config import get_config
+from config import get_config, light_mode
 from src.training.trainer import train
 
 app = typer.Typer()
@@ -12,8 +12,11 @@ def main(
     epochs: int = typer.Option(None, help="Override number of training epochs"),
     lr: float = typer.Option(None, help="Override learning rate"),
     rank: int = typer.Option(None, help="Override LoRA rank"),
+    light: bool = typer.Option(
+        False, "--light", help="Low-resource mode: CPU, capped threads, shorter sequences"
+    ),
 ):
-    cfg = get_config()
+    cfg = light_mode() if light else get_config()
     if epochs:
         cfg.training.num_epochs = epochs
     if lr:

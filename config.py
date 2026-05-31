@@ -70,7 +70,36 @@ class Config:
     reward: RewardConfig = field(default_factory=RewardConfig)
     mlflow: MLflowConfig = field(default_factory=MLflowConfig)
     device: str = "mps"                  # mps | cuda | cpu
+    # Cap PyTorch CPU threads so training leaves cores free for the system.
+    # 0 = use PyTorch default (all cores).
+    num_threads: int = 0
 
 
 def get_config() -> Config:
     return Config()
+
+
+def light_mode(cfg: Config | None = None) -> Config:
+    """
+    Return a low-resource configuration that keeps the laptop responsive while
+    training runs. Trades training speed for a usable machine:
+
+    - device='cpu'        : avoids GPU/window-compositor contention (the main
+                            cause of UI jank on Apple Silicon with MPS)
+    - num_threads=4       : leaves cores free for the OS and your apps
+    - max_length=256      : attention is O(n^2); halving sequence length is a
+                            ~4x compute and ~2x memory reduction per step
+    - batch_size=2        : lower peak memory
+    - num_epochs=5        : finishes sooner (small dataset converges fast)
+
+    Pair with the OS scheduler via run_light.sh (nice -n 19) for best results.
+    """
+    cfg = cfg or get_config()
+    cfg.device = "cpu"
+    cfg.num_threads = 4
+    cfg.data.max_length = 256
+    cfg.training.batch_size = 2
+    cfg.training.num_epochs = 5
+    cfg.reward.batch_size = 2
+    cfg.reward.num_epochs = 3
+    return cfg
