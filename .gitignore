@@ -1,11 +1,22 @@
+# Python
 __pycache__/
-*.pyc
-*.pyo
-.DS_Store
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Training artifacts
 checkpoints/
 reward_checkpoints/
-chroma_db/
 mlruns/
+chroma_db/
+logs/
+results/
 *.pt
-*.bin
-*.safetensors
+
+# Env
+.env
+.venv/
+venv/
+
+# OS
+.DS_Store
