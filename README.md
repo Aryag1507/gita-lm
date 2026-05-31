@@ -122,7 +122,36 @@ mlflow ui
 
 ## Results
 
-_(populated after running `python benchmark.py` — perplexity chart and qualitative examples)_
+Evaluated on a held-out test set of 63 verses the model never saw during training.
+
+### Quantitative: perplexity
+
+Perplexity measures how "surprised" the model is by the real commentary text — lower is better.
+
+| Model | Test perplexity ↓ |
+|---|---|
+| Base GPT-2 (124M) | 23.18 |
+| **+ LoRA fine-tuning** | **18.68** |
+
+The LoRA adapter (1.8 MB, 0.35% of parameters) cuts perplexity by **~19%**, trained entirely on CPU.
+
+![Perplexity comparison](results/perplexity_comparison.png)
+
+### Qualitative: base vs fine-tuned
+
+The clearest difference shows up in generation. On verses with Sanskrit context, the **base model degenerates into repeated Devanagari characters**, while the **fine-tuned model produces coherent English in Prabhupada's register** — invoking Kṛṣṇa consciousness, Vedic theology, and the material/spiritual distinction.
+
+**BG 4.20** — *"Abandoning all attachment to the results of his activities..."*
+
+> **Base GPT-2:** `वीनत्वा क्रिजिक सेटनित्रिक्र प्नाश्रप्र ह्रोत्स जेन्माय्ह्र...` (collapses into Sanskrit-character noise)
+>
+> **Fine-tuned:** *"This is the position taken by the Vedic theologians. They say that one should not abandon all attachment to the results of his activities... the result is to be treated in terms of the material conditions, and not by the spiritual ones."*
+
+On this verse the theological vocabulary density rose from **0.0 → 0.087** after fine-tuning.
+
+### Honest limitations of these outputs
+
+The fine-tuned generations are on-topic and stylistically correct but **repeat phrases** ("Weather in the celestial world is like the weather in the celestial world..."). This is expected: GPT-2 is small (124M), trained briefly in low-resource mode, and greedy decoding loops easily on small models. Reducing exactly this kind of degeneration is the motivation for the **reward reranking** and **DPO alignment** stages in the pipeline — the repetition is the problem the rest of the project is built to address.
 
 ---
 
